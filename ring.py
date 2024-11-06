@@ -43,7 +43,7 @@ csv_file = open(filename, mode="w", newline="")
 csv_writer = csv.writer(csv_file)
 csv_writer.writerow([
     "timestamp", "payload", "accX", "accY", "accZ",
-    "ppg_raw", "ppg_max", "ppg_min", "ppg_diff", "ppg",
+    "ppg_raw", "ppg_max", "ppg_min", "ppg_diff",
     "spO2_raw", "spO2_max", "spO2_min", "spO2_diff"
 ])
 
@@ -52,7 +52,7 @@ async def handle_notification(sender: int, data: bytearray):
     # Initialize parsed_data dictionary with default empty values
     parsed_data = {
         "payload": "", "accX": "", "accY": "", "accZ": "",
-        "ppg_raw": "", "ppg_max": "", "ppg_min": "", "ppg_diff": "", "ppg": "",
+        "ppg_raw": "", "ppg_max": "", "ppg_min": "", "ppg_diff": "",
         "spO2_raw": "", "spO2_max": "", "spO2_min": "", "spO2_diff": ""
     }
     """Callback to update sensor data and write to CSV every 100ms."""
