@@ -55,7 +55,7 @@ async def handle_notification(sender: int, data: bytearray):
         "ppg_raw": "", "ppg_max": "", "ppg_min": "", "ppg_diff": "",
         "spO2_raw": "", "spO2_max": "", "spO2_min": "", "spO2_diff": ""
     }
-    """Callback to update sensor data and write to CSV every 100ms."""
+    
     # Store the payload as a hex string
     parsed_data["payload"] = data.hex()
 

@@ -100,6 +100,8 @@ timestamp,payload,accX,accY,accZ,ppg_raw,ppg_max,ppg_min,ppg_diff,ppg,spO2_raw,s
 Parse the raw data to be ingested in [Edge Impulse Studio](studio.edgeimpulse.com).
 This will probably require to interpolate missing values, normalize some values, etc...
 
+![graph](/docs/graph.png)
+
 ## Resources
 
 To build this script, I have used the following resources:
