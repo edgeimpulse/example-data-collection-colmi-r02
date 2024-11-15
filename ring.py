@@ -3,6 +3,7 @@ import asyncio
 import json
 import os
 import csv
+import subprocess
 from bleak import BleakClient, BleakScanner
 from datetime import datetime
 
@@ -31,12 +32,20 @@ DISABLE_RAW_SENSOR_CMD = create_command("a102")
 CONFIG_FILE = "config.json"
 DATA_FOLDER = "raw_data"
 
+# Argument Parsing
+parser = argparse.ArgumentParser(description="Bluetooth ring data logger")
+parser.add_argument("--duration", type=int, default=30, help="Duration in seconds to run the logger")
+parser.add_argument("--create-graphs", nargs="*", help="Columns to plot after collecting data (e.g., accX accY ppg_raw)")
+parser.add_argument("--label", type=str, default="", help="Optional label to prefix output files")
+args = parser.parse_args()
+
 # Ensure folder exists
 os.makedirs(DATA_FOLDER, exist_ok=True)
 
-# Create filename with current timestamp
+# Create filename with current timestamp and optional label
 timestamp_now = datetime.now().strftime("%Y%m%d_%H%M%S")
-filename = os.path.join(DATA_FOLDER, f"ring_data_{timestamp_now}.csv")
+prefix = f"{args.label}." if args.label else ""
+filename = os.path.join(DATA_FOLDER, f"{prefix}ring_data_{timestamp_now}.csv")
 
 # Open CSV file for writing
 csv_file = open(filename, mode="w", newline="")
@@ -48,7 +57,6 @@ csv_writer.writerow([
 ])
 
 async def handle_notification(sender: int, data: bytearray):
-
     # Initialize parsed_data dictionary with default empty values
     parsed_data = {
         "payload": "", "accX": "", "accY": "", "accZ": "",
@@ -60,8 +68,6 @@ async def handle_notification(sender: int, data: bytearray):
     parsed_data["payload"] = data.hex()
 
     # Update parsed_data based on the sensor type
-    # if data[0] == 0x03:
-    #     parsed_data["battery_level"] = data[1]
     if data[0] == 0xA1:
         subtype = data[1]
         if subtype == 0x01:
@@ -81,10 +87,7 @@ async def handle_notification(sender: int, data: bytearray):
         
         timestamp = datetime.now().isoformat()
         csv_writer.writerow([timestamp] + [parsed_data.get(col, "") for col in parsed_data])
-        print("Written to CSV:", [timestamp] + [parsed_data.get(col, "") for col in parsed_data])  # Confirm write
-
-    # Print parsed data to verify the values
-    print("Received data:", parsed_data)
+        print("Written to CSV:", [timestamp] + [parsed_data.get(col, "") for col in parsed_data])
 
 async def send_data_array(client, command, service_name):
     """Send data to RXTX or MAIN service's write characteristic."""
@@ -153,10 +156,11 @@ async def main(duration):
             csv_file.close()
             print(f"Data saved to {filename}")
 
-# Entry point with argument parsing
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Bluetooth ring data logger")
-    parser.add_argument("--duration", type=int, default=30, help="Duration in seconds to run the logger")
-    args = parser.parse_args()
+            # Call create-graphs.py if --create-graphs was passed with columns
+            if args.create_graphs:
+                for column in args.create_graphs:
+                    print(f"Creating graph for {column}")
+                    subprocess.run(["python", "create-graphs.py", "--input", filename, "--column", column])
 
-    asyncio.run(main(args.duration))
+# Run the main function
+asyncio.run(main(args.duration))

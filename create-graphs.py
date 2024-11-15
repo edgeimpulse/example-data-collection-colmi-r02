@@ -14,7 +14,7 @@ def remove_outliers(df, column):
     # Filter the DataFrame to remove outliers
     return df[(df[column] >= lower_bound) & (df[column] <= upper_bound)]
 
-def plot_data(input_file, column):
+def plot_data(input_file, column, remove_outliers_flag):
     # Load the CSV file into a DataFrame
     df = pd.read_csv(input_file, parse_dates=['timestamp'])
     
@@ -27,8 +27,9 @@ def plot_data(input_file, column):
     # Drop NaN values for the specified column
     df = df.dropna(subset=[column])
 
-    # Automatically remove outliers
-    df = remove_outliers(df, column)
+    # Remove outliers if the flag is set
+    if remove_outliers_flag:
+        df = remove_outliers(df, column)
 
     # Create graphs folder if it doesn't exist
     os.makedirs("graphs", exist_ok=True)
@@ -42,7 +43,7 @@ def plot_data(input_file, column):
     # Plot the data
     plt.figure(figsize=(10, 6))
     plt.plot(df['timestamp'], df[column], label=column, color='b')
-    plt.title(f"{column} over Time (Outliers Removed)")
+    plt.title(f"{column} over Time" + (" (Outliers Removed)" if remove_outliers_flag else ""))
     plt.xlabel("Timestamp")
     plt.ylabel(column)
     plt.xticks(rotation=45)
@@ -52,13 +53,15 @@ def plot_data(input_file, column):
     # Save the plot to the specified output path
     plt.savefig(output_path)
     print(f"Graph saved to {output_path}")
-    plt.show()
+    # plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot data from CSV file")
     parser.add_argument("--input", required=True, help="Path to the CSV file")
     parser.add_argument("--column", required=True, help="Column name to plot")
+    parser.add_argument("--keep-outliers", action="store_false", dest="remove_outliers", help="Keep outliers in the data")
 
     args = parser.parse_args()
 
-    plot_data(args.input, args.column)
+    # Call plot_data with the remove_outliers argument as True by default unless --keep-outliers is specified
+    plot_data(args.input, args.column, args.remove_outliers)

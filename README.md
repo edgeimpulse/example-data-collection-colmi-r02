@@ -21,33 +21,64 @@ This Python script, `ring.py`, logs raw sensor data from a [Colmi R02 ring](http
    pip install bleak pandas
    ```
 
+   Optional (required if you need to plot graphs):
+   ```bash
+   pip install matplotlib
+   ```
+
 ## Usage
 
 1. Clone this repository
 2. Run the script with the following command:
-    ```bash
-    python ring.py --duration <duration_in_seconds>
-    ```
+    
+```bash
+python ring.py --duration <duration_in_seconds>
+```
 
 *Notes: When running the script for the first time, it will ask you to select your ring. The address will be stored in a `config.json` file.*
 
 ```
 > python ring.py --duration 60
-0: SPEAKERS [E4095B2B-XXX-XXXX-XXXX-A5F4BEE8C7D8]
-1: None [C7060F05-353C-E4DD-80FC-B635A1BCCCE8]
+0: SPEAKERS [B4095B2B-XXX-XXXX-XXXX-A5F4BEE8C7D8]
+1: None [A7060F05-XXXX-XXXX-XXXX-B635A1BCCCE8]
 2: R02_2182 [BBF33765-XXXX-XXXX-XXXX-DD487BF7717C]
 Select a device by entering its number: 2
 ```
 
-If you don't see your device, make sure the ring is disconnected from previous connections (QRing app for example).
+**If you don't see your device, make sure the ring is disconnected from previous connections** (QRing app for example).
 
-The script will:
+### Generate graphs and labeling (optional)
 
-1. Discover and connect to your Colmi R02 ring via Bluetooth.
-2. Collect data from the ring and store it in CSV format in a `raw_data` folder.
-3. Save the collected data to a CSV file, with a timestamped filename (e.g., `ring_data_YYYYMMDD_HHMMSS.csv`).
+You can also set a label and create graphs from the collected data directly by specifying the `--create-graphs` argument, which allows you to select specific columns for visualization:
 
-## Output Format
+```bash
+python ring.py --duration <duration_in_seconds> --create-graphs ppg_raw --label mylabel
+```
+
+* `--create-graphs <columns>`: Specifies which columns (sensor data) to plot. Separate multiple columns with commas.
+* `--label <label>`: Optionally specify a label for the saved CSV and graph files. Files will be prefixed with this label.
+
+
+## Explanation of the script
+
+The `ring.py` script performs the following steps:
+
+1. **Bluetooth Device Discovery**: Scans for nearby Bluetooth devices, allowing the user to select the Colmi R02 ring. Once selected, the device address is saved to `config.json` for automatic reconnection in future runs.
+   
+2. **Connect to the Ring**: Establishes a Bluetooth connection to the selected Colmi R02 ring.
+
+3. **Enable Data Streaming**: Configures the ring to stream data by sending the appropriate commands to enable raw sensor data and set measurement units.
+
+4. **Collect Sensor Data**: Retrieves and parses various sensor data packets from the ring, including:
+   - **Accelerometer** readings (`accX`, `accY`, `accZ`)
+   - **PPG** readings (`ppg_raw`, `ppg_max`, `ppg_min`, `ppg_diff`)
+   - **SpO2** readings (`spO2_raw`, `spO2_max`, `spO2_min`, `spO2_diff`)
+
+5. **Save Data to CSV**: Logs the collected data into a CSV file in the `raw_data` folder with a timestamped filename (e.g., `ring_data_YYYYMMDD_HHMMSS.csv`). If a `--label` is provided, the filename will be prefixed with the specified label.
+
+6. **Optionally Generate Graphs**: If the `--create-graphs` argument is provided, the script will generate line plots for the specified columns and save them as images in the `graphs` folder.
+
+## Output format
 
 Each CSV file contains the following columns:
 
@@ -59,7 +90,7 @@ Each CSV file contains the following columns:
 | `ppg_raw`, `ppg_max`, `ppg_min`, `ppg_diff` | PPG sensor readings         |
 | `spO2_raw`, `spO2_max`, `spO2_min`, `spO2_diff` | SpO2 sensor data       |
 
-### Example CSV Output
+### Example CSV output
 
 ```csv
 timestamp,payload,accX,accY,accZ,ppg_raw,ppg_max,ppg_min,ppg_diff,ppg,spO2_raw,spO2_max,spO2_min,spO2_diff
