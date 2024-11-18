@@ -2,6 +2,8 @@
 
 This Python script, `ring.py`, logs raw sensor data from a [Colmi R02 ring](https://www.colmi.info/products/colmi-r02-smart-ring). It collects data such as accelerometer values, PPG (photoplethysmogram) readings, SpO2 (oxygen saturation) levels remotely using the Bluetooth data streaming. The script is designed to run on Python 3.11. It is recommended to updgrade the ring firmware for higher data streaming capabilities.
 
+![example](/docs/ring.gif)
+
 ## Prerequisites
 
 1. **Python Version**: Ensure you have Python 3.11 installed. Using `pyenv` is recommended for managing Python versions:
