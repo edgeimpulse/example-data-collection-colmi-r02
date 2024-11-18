@@ -18,12 +18,7 @@ This Python script, `ring.py`, logs raw sensor data from a [Colmi R02 ring](http
 
 3. **Dependencies**: Install the required Python packages:
    ```bash
-   pip install bleak pandas
-   ```
-
-   Optional (required if you need to plot graphs):
-   ```bash
-   pip install matplotlib
+   pip install bleak pandas requests matplotlib
    ```
 
 ## Usage
@@ -47,17 +42,20 @@ Select a device by entering its number: 2
 
 **If you don't see your device, make sure the ring is disconnected from previous connections** (QRing app for example).
 
-### Generate graphs and labeling (optional)
+### Optional arguments
 
-You can also set a label and create graphs from the collected data directly by specifying the `--create-graphs` argument, which allows you to select specific columns for visualization:
+You can also set a label, select which sensor to use, resample the data at a desired frequency, create graphs from the collected data or upload your data directly to Edge Impulse after the data collection.
+
 
 ```bash
-python ring.py --duration <duration_in_seconds> --create-graphs ppg_raw --label mylabel
+python ring.py --duration <duration_in_seconds> --label idle --axis accX,accY,accZ,ppg --resample 20 --plot --ei_upload
 ```
 
-* `--create-graphs <columns>`: Specifies which columns (sensor data) to plot. Separate multiple columns with commas.
-* `--label <label>`: Optionally specify a label for the saved CSV and graph files. Files will be prefixed with this label.
-
+* `--label <label>`: Label for the data item. Files will be prefixed with this label.
+* `--axis <columns>`: Which columns (sensor data) to plot, resample and upload to Edge Impulse. Separate multiple columns with commas. If not set the following values will be used: `accX,accY,accZ,ppg,spO2`. Note that spO2 is spelled with a capital `O` not the number `0`.
+* `--resample <milliseconds>`: Resampling rate in milliseconds
+* `--plot`: Plot the selected axis
+* `--ei_upload`: The script will prompt you for your Edge Impulse API Key if it's not already saved in `config.json`. You need to configure the [CSV Wizard](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition/csv-wizard) for you project. See below for more info.
 
 ## Explanation of the script
 
@@ -76,9 +74,17 @@ The `ring.py` script performs the following steps:
 
 5. **Save Data to CSV**: Logs the collected data into a CSV file in the `raw_data` folder with a timestamped filename (e.g., `ring_data_YYYYMMDD_HHMMSS.csv`). If a `--label` is provided, the filename will be prefixed with the specified label.
 
-6. **Optionally Generate Graphs**: If the `--create-graphs` argument is provided, the script will generate line plots for the specified columns and save them as images in the `graphs` folder.
+6. **Resampling**: The data are resampled, by default at 50Hz, and saved in the resampled folder. The missing values are linearly interpolated.
 
-## Output format
+7. **Graphing (optional)**: One graph per axis can be optionally ploted with Matplotlib.
+
+![graph](/docs/graph.png)
+
+8. **Upload to Edge Impulse (optional)**: The script can optionally upload the collected data to Edge Impulse using [Edge Impulse Ingestion API](https://docs.edgeimpulse.com/reference/data-ingestion/ingestion-api).
+
+![EI Upload](/docs/ring-data-collection.gif)
+
+## Raw data output format
 
 Each CSV file contains the following columns:
 
@@ -126,12 +132,32 @@ timestamp,payload,accX,accY,accZ,ppg_raw,ppg_max,ppg_min,ppg_diff,ppg,spO2_raw,s
 2024-11-06T13:45:24.247156,a10312010c00160e00000000000000e7,366,289,-1856,,,,,,,,,
 ```
 
-## Next Steps
+## Upload to Edge Impulse
 
-Parse the raw data to be ingested in [Edge Impulse Studio](studio.edgeimpulse.com).
-This will probably require to interpolate missing values, normalize some values, etc...
+To automatically upload your data samples to Edge Impulse, you first need to configure the CSV Wizard for your project.
+A default configuration file for the CSV Wizard is located at the root of this repository: `csv-wizard.json`. Feel free to upload your own CSV and configure it according to your needs.
 
-![graph](/docs/graph.png)
+To upload the configuration file, go to your project. In the **Data acquisition** view, navigate the the **CSV Wizard** tab and upload the `csv-wizard.json` file.
+
+When first running the script with the `-ei_upload` argument, the script will ask your for your Edge Impulse project API KEY. It will then be saved in a config.json with your ring bluetooth address:
+
+```
+Data saved to raw_data/ring_data_20241118_154734.csv
+Resampled data saved to resampled/idle.ring_data_20241118_154734.csv
+Graph saved to graphs/idle.ring_data_20241118_154734_accX.png
+Graph saved to graphs/idle.ring_data_20241118_154734_accY.png
+Graph saved to graphs/idle.ring_data_20241118_154734_accZ.png
+Graph saved to graphs/idle.ring_data_20241118_154734_ppg.png
+Graph saved to graphs/idle.ring_data_20241118_154734_spO2.png
+Please enter your Edge Impulse API Key: ei_xxxxx
+Data successfully uploaded to Edge Impulse.
+```
+
+## Extract Heart Rates
+
+See [Processing PPG input with HR/HRV Features Block](https://docs.edgeimpulse.com/docs/tutorials/end-to-end-tutorials/hr-hrv-block-example) for a complete tutorial.
+
+![Extract HR](/docs/extract_HR.png)
 
 ## Resources
 

@@ -1,0 +1,31 @@
+{
+    "version": 1,
+    "fileName": "idle.ring_data_20241118_144005.csv",
+    "created": 1731926859065,
+    "delimiter": ",",
+    "skipFirstLines": 10,
+    "fixedHeader": [
+        "timestamp",
+        "accX",
+        "accY",
+        "accZ",
+        "ppg",
+        "spO2"
+    ],
+    "spec": {
+        "type": "timeseries-row",
+        "valueColumns": [
+            "accX",
+            "accY",
+            "accZ",
+            "ppg",
+            "spO2"
+        ],
+        "timestamp": {
+            "type": "column",
+            "timestampColumn": "timestamp",
+            "format": "full-timestamp",
+            "frequency": 50
+        }
+    }
+}
