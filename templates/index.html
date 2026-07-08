@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>R02 Activity Collector</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="/docs/Edge%20Impulse%20primary%20logo.png" alt="Edge Impulse logo" />
+        <div>
+          <h1>Activity Data Collector</h1>
+          <p>Real-time collection for activity detection with metadata and dataset upload.</p>
+        </div>
+      </div>
+      <div id="status-pill" class="pill">Idle</div>
+    </header>
+
+    <main class="layout">
+      <section class="panel controls">
+        <h2>Session Setup</h2>
+
+        <div class="row two">
+          <label>
+            patient_id
+            <input id="patientId" type="text" readonly />
+          </label>
+          <button id="renewPatientId" class="btn secondary">Renew patient_id</button>
+        </div>
+
+        <div class="row three">
+          <label>
+            Gender
+            <select id="gender">
+              <option value="unspecified">unspecified</option>
+              <option value="female">female</option>
+              <option value="male">male</option>
+              <option value="non-binary">non-binary</option>
+              <option value="other">other</option>
+            </select>
+          </label>
+          <label>
+            Age
+            <input id="age" type="number" min="1" max="120" value="30" />
+          </label>
+          <label>
+            Country
+            <input id="country" type="text" placeholder="e.g. France" />
+          </label>
+        </div>
+
+        <div class="row three">
+          <label>
+            Label
+            <input id="label" type="text" value="activity" />
+          </label>
+          <label>
+            Duration (s)
+            <input id="duration" type="number" min="10" max="3600" value="60" />
+          </label>
+          <label>
+            Resample (ms)
+            <input id="resampleMs" type="number" min="10" max="200" value="20" />
+          </label>
+        </div>
+
+        <div class="row two">
+          <label>
+            Edge Impulse API key
+            <input id="apiKey" type="password" placeholder="ei_xxx" />
+          </label>
+          <label class="checkbox">
+            <input id="autoUpload" type="checkbox" />
+            Auto-upload when recording finishes
+          </label>
+        </div>
+
+        <div class="row two">
+          <button id="scanBtn" class="btn">Scan devices</button>
+          <button id="saveDeviceBtn" class="btn secondary">Save selected device</button>
+        </div>
+
+        <div class="row one">
+          <label>
+            Ring device
+            <select id="deviceSelect"></select>
+          </label>
+        </div>
+
+        <div class="row three">
+          <button id="startBtn" class="btn success">Start recording</button>
+          <button id="stopBtn" class="btn warning">Stop recording</button>
+          <button id="uploadBtn" class="btn">Upload latest dataset</button>
+        </div>
+
+        <div id="messages" class="messages"></div>
+      </section>
+
+      <section class="panel data-view">
+        <div class="data-header">
+          <h2>Data View</h2>
+          <span id="viewerSource" class="muted-note">Source: live stream</span>
+        </div>
+        <section class="raw-datasets">
+          <div class="raw-header">
+            <h3>Raw Dataset Samples</h3>
+            <button id="refreshRawBtn" class="btn secondary" type="button">Reload raw data</button>
+          </div>
+
+          <div class="row four compact">
+            <label>
+              Upload mode
+              <select id="uploadMode">
+                <option value="raw">Raw</option>
+                <option value="resampled">Resampled</option>
+              </select>
+            </label>
+            <label>
+              Acc Hz (resampled)
+              <input id="accHz" type="number" min="0.1" step="0.1" placeholder="e.g. 4" />
+            </label>
+            <label>
+              PPG Hz (resampled)
+              <input id="ppgHz" type="number" min="0.1" step="0.1" placeholder="e.g. 4" />
+            </label>
+            <label>
+              SpO2 Hz (resampled)
+              <input id="spo2Hz" type="number" min="0.1" step="0.1" placeholder="e.g. 4" />
+            </label>
+          </div>
+
+          <p id="rawStatus" class="raw-status">No raw datasets loaded yet.</p>
+          <div class="table-wrap">
+            <table class="raw-table" aria-label="Raw datasets table">
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Rows</th>
+                  <th>Acc (Hz)</th>
+                  <th>PPG (Hz)</th>
+                  <th>SpO2 (Hz)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="rawTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel charts">
+        <h2>Signal Viewer</h2>
+        <div id="accChart" class="chart"></div>
+        <div id="spo2Chart" class="chart"></div>
+        <div id="ppgChart" class="chart"></div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

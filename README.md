@@ -18,9 +18,10 @@ This Python script, `ring.py`, logs raw sensor data from a [Colmi R02 ring](http
 
     The firmware is located at the root of the repository: `R02_3.00.06_FasterRawValuesMOD.bin`
 
-3. **Dependencies**: Install the required Python packages:
+3. **Dependencies**: Install the required Python packages with `uv`:
    ```bash
-   pip install bleak pandas requests matplotlib
+   uv venv
+   uv pip install --native-tls bleak pandas requests matplotlib fastapi uvicorn jinja2
    ```
 
 ## Usage
@@ -43,6 +44,20 @@ Select a device by entering its number: 2
 ```
 
 **If you don't see your device, make sure the ring is disconnected from previous connections** (QRing app for example).
+
+## Web app (real-time visual interface)
+
+This repository also includes a web data collection app with:
+
+* Real-time plots for accelerometer, SpO2, and PPG
+* Patient metadata fields (`Gender`, `Age`, `Country`) and generated `patient_id`
+* Edge Impulse upload controls with a secret API key field and optional auto-upload after recording
+
+Run it with:
+
+```bash
+uv run uvicorn fastapi_app:app --reload
+```
 
 ### Optional arguments
 
@@ -160,6 +175,50 @@ Data successfully uploaded to Edge Impulse.
 See [Processing PPG input with HR/HRV Features Block](https://docs.edgeimpulse.com/docs/tutorials/end-to-end-tutorials/hr-hrv-block-example) for a complete tutorial.
 
 ![Extract HR](/docs/extract_HR.png)
+
+## Setup and Launch the UI
+
+The repository also includes a FastAPI web app to:
+
+* connect to the ring and record a new session,
+* browse raw datasets already stored in `raw_data`,
+* inspect the sensor graphs for a selected sample,
+* upload either raw or resampled sensor payloads to Edge Impulse.
+
+### 1. Install dependencies
+
+If you have not created the environment yet:
+
+```bash
+uv venv
+uv pip install --native-tls bleak pandas requests matplotlib fastapi uvicorn jinja2
+```
+
+### 2. Start the web app
+
+From the repository root, run:
+
+```bash
+uv run uvicorn fastapi_app:app --host 0.0.0.0 --port 8010
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8010
+```
+
+### 3. Main UI areas
+
+* **Session Setup**: choose the ring, configure metadata, and start or stop a live recording.
+* **Data View**: list the CSV files from `raw_data`, inspect their measured per-sensor frequencies, and upload individual samples to Edge Impulse.
+* **Signal Viewer**: display either the live stream or a selected raw dataset sample.
+
+### 4. Notes
+
+* Make sure the ring is disconnected from the QRing app or any other BLE client before starting a session.
+* The Edge Impulse API key can be saved from the UI and reused for later uploads.
+* Raw sample uploads use the captured ring timestamps. Resampled uploads let you provide one target frequency per sensor stream.
 
 ## Resources
 
